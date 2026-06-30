@@ -126,7 +126,7 @@ async def predict_density(request: PredictionRequest):
     density[R < a] = np.nan
     
     # Convertendo para Base64
-    fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
+    fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
     fig.patch.set_facecolor('black')
     ax.set_facecolor('black')
     
@@ -135,6 +135,8 @@ async def predict_density(request: PredictionRequest):
     # Adicionando a legenda (colorbar)
     cbar = fig.colorbar(cax, ax=ax, fraction=0.046, pad=0.04)
     cbar.ax.tick_params(colors='white')
+    cbar.outline.set_edgecolor('white')
+    cbar.set_label('Densidade Polimérica', color='white', labelpad=10)
     
     circle = plt.Circle((0, 0), a, color='#1e293b', zorder=10)
     ax.add_artist(circle)
