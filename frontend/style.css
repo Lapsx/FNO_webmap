@@ -138,7 +138,7 @@ input[type=range] {
     flex: 3;
     display: flex;
     gap: 2rem;
-    flex-wrap: nowrap; /* Impede de quebrar a linha, forçando um lado a lado */
+    flex-wrap: wrap; /* Impede de quebrar a linha, forçando um lado a lado */
     justify-content: center;
     align-items: flex-start;
 }
@@ -270,3 +270,43 @@ canvas:hover {
 .info-icon:hover {
     opacity: 1.0;
 }
+
+/* Métricas e Termômetro */
+.metrics-list {
+    list-style: none;
+    margin-bottom: 1rem;
+}
+.metrics-list li {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    margin-bottom: 0.4rem;
+}
+.metrics-list span {
+    font-family: monospace;
+    color: #38bdf8;
+    font-weight: bold;
+}
+.alert-box {
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+}
+.alert-coil {
+    background: rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
+    border-color: #38bdf8;
+}
+.alert-globule {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border-color: #fca5a5;
+}
+.btn-primary { background: #4f46e5; color: white; margin-bottom: 0.5rem; }
+.btn-primary:hover { background: #6366f1; }
+.btn-secondary { background: #475569; color: white; margin-bottom: 0.5rem; }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary:not(:disabled):hover { background: #64748b; }

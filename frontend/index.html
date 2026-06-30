@@ -79,7 +79,7 @@
                 </div>
             </aside>
 
-            <!-- Painel de Visualização -->
+            <!-- Painel de Visualização e Métricas -->
             <section class="visuals">
                 <div class="canvas-container glass-panel">
                     <h3>Campo Potencial V(x,z) <span class="badge">Interativo</span></h3>
@@ -93,6 +93,34 @@
                     <div class="output-wrapper">
                         <img id="outputImage" src="" alt="Aguardando inputs..." style="display: none;">
                         <div id="loading" class="spinner" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="metrics-container glass-panel" style="width: 400px; display: flex; flex-direction: column;">
+                    <h3>Termodinâmica e Fase</h3>
+                    <div id="phaseThermometer" class="alert-box">Fase: <span id="phaseValue">Aguardando...</span></div>
+                    <ul class="metrics-list">
+                        <li>Massa Total: <span id="massValue">--</span></li>
+                        <li>Raio de Giração (Rg): <span id="rgValue">--</span></li>
+                        <li>Centro de Massa (X, Z): <span id="comValue">--</span></li>
+                    </ul>
+                    
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    
+                    <h3>Comparador de Soluções</h3>
+                    <p class="instruction">Salve um estado e altere os parâmetros para comparar.</p>
+                    <div class="button-group" style="margin-top: 0.5rem;">
+                        <button id="saveStateBtn" class="btn btn-primary">Salvar Estado Atual (A)</button>
+                        <button id="compareBtn" class="btn btn-secondary" disabled>Analisar Diferença (Atual - A)</button>
+                    </div>
+                </div>
+
+                <div class="canvas-container glass-panel" id="diffContainer" style="display: none;">
+                    <h3>Mapa de Diferença <span class="badge" style="background: #eab308; color: black;">Comparação</span></h3>
+                    <p class="instruction">Estado Atual (B) subtraído do Estado Salvo (A)</p>
+                    <div class="output-wrapper">
+                        <img id="diffImage" src="" alt="Diferença..." style="display: none;">
+                        <div id="diffLoading" class="spinner" style="display: none;"></div>
                     </div>
                 </div>
             </section>

@@ -18,8 +18,24 @@ const floryValue = document.getElementById('floryValue');
 const lossImage = document.getElementById('lossImage');
 const lossLoading = document.getElementById('lossLoading');
 
+// Novos Elementos UI
+const massValue = document.getElementById('massValue');
+const rgValue = document.getElementById('rgValue');
+const comValue = document.getElementById('comValue');
+const phaseThermometer = document.getElementById('phaseThermometer');
+const phaseValue = document.getElementById('phaseValue');
+
+const saveStateBtn = document.getElementById('saveStateBtn');
+const compareBtn = document.getElementById('compareBtn');
+const diffContainer = document.getElementById('diffContainer');
+const diffImage = document.getElementById('diffImage');
+const diffLoading = document.getElementById('diffLoading');
+
 let charges = [];
 const N = 100; // Resolução do modelo FNO
+
+let savedStateA = null;
+let currentPayload = null;
 
 // Atualiza labels dos parâmetros físicos
 kuhnSlider.addEventListener('input', (e) => { kuhnValue.textContent = e.target.value; requestPrediction(); });
@@ -108,22 +124,20 @@ function drawCanvas() {
 // Limpa tudo
 clearBtn.addEventListener('click', () => {
     charges = [];
-    
-    // Reset parameters
     kuhnSlider.value = 1.0;
     kuhnValue.textContent = '1.0';
-    
     debyeSlider.value = 1.0;
     debyeValue.textContent = '1.0';
-    
     florySlider.value = 0.0;
     floryValue.textContent = '0.0';
-    
     chargeSlider.value = 5;
     chargeValueLabel.textContent = `Repulsivo (+5)`;
     chargeValueLabel.style.color = '#fca5a5';
-    
     radiusSlider.value = 5;
+    
+    savedStateA = null;
+    compareBtn.disabled = true;
+    diffContainer.style.display = 'none';
 
     drawCanvas();
     outputImage.style.display = 'none';
@@ -146,6 +160,46 @@ canvas.addEventListener('click', (e) => {
     requestPrediction();
 });
 
+// Salvar Estado e Comparar
+saveStateBtn.addEventListener('click', () => {
+    if (currentPayload) {
+        savedStateA = JSON.parse(JSON.stringify(currentPayload));
+        compareBtn.disabled = false;
+        saveStateBtn.textContent = "Estado A Salvo! ✓";
+        setTimeout(() => saveStateBtn.textContent = "Salvar Estado Atual (A)", 2000);
+    }
+});
+
+compareBtn.addEventListener('click', async () => {
+    if (!savedStateA || !currentPayload) return;
+    
+    diffContainer.style.display = 'flex';
+    diffImage.style.display = 'none';
+    diffLoading.style.display = 'block';
+    
+    try {
+        const payload = {
+            stateA: savedStateA,
+            stateB: currentPayload
+        };
+        const response = await fetch('http://localhost:8000/compare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if(response.ok) {
+            const data = await response.json();
+            diffImage.src = "data:image/png;base64," + data.image;
+            diffImage.style.display = 'block';
+            diffLoading.style.display = 'none';
+        }
+    } catch (err) {
+        console.error("Erro na Comparação:", err);
+        diffLoading.style.display = 'none';
+    }
+});
+
 // Comunicação com o Servidor Python (FastAPI)
 async function requestPrediction() {
     const startTime = performance.now();
@@ -155,18 +209,18 @@ async function requestPrediction() {
         loading.style.display = 'block';
     }
 
-    try {
-        const payload = {
-            charges: charges,
-            b: parseFloat(kuhnSlider.value),
-            kappa: parseFloat(debyeSlider.value),
-            u: parseFloat(florySlider.value)
-        };
+    currentPayload = {
+        charges: charges,
+        b: parseFloat(kuhnSlider.value),
+        kappa: parseFloat(debyeSlider.value),
+        u: parseFloat(florySlider.value)
+    };
 
+    try {
         const response = await fetch('http://localhost:8000/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(currentPayload)
         });
 
         if(response.ok) {
@@ -174,6 +228,23 @@ async function requestPrediction() {
             outputImage.src = "data:image/png;base64," + data.image;
             outputImage.style.display = 'block';
             loading.style.display = 'none';
+            
+            // Atualizar Métricas
+            if (data.metrics) {
+                massValue.textContent = data.metrics.mass.toFixed(2);
+                rgValue.textContent = data.metrics.rg.toFixed(3);
+                comValue.textContent = `(${data.metrics.com_x.toFixed(2)}, ${data.metrics.com_z.toFixed(2)})`;
+                
+                phaseValue.textContent = data.metrics.phase;
+                
+                // Atualizar Cor do Termômetro
+                phaseThermometer.className = "alert-box"; // reset
+                if (data.metrics.phase.includes('Colapsado')) {
+                    phaseThermometer.classList.add('alert-globule');
+                } else if (data.metrics.phase.includes('Inchado')) {
+                    phaseThermometer.classList.add('alert-coil');
+                }
+            }
             
             const endTime = performance.now();
             latencyLabel.textContent = `Latência FNO: ${Math.round(endTime - startTime)} ms`;
@@ -210,22 +281,16 @@ requestPrediction();
 fetchLoss();
 setInterval(fetchLoss, 10000); // Atualiza o gráfico de loss a cada 10 segundos
 
-
 // Lógica de Troca de Abas
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
 tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        // Remove active class from all buttons and contents
         tabBtns.forEach(b => b.classList.remove('active'));
         tabContents.forEach(c => c.classList.remove('active'));
-
-        // Add active class to clicked button and target content
         btn.classList.add('active');
         const targetId = btn.getAttribute('data-tab');
         document.getElementById(targetId).classList.add('active');
     });
 });
-
-

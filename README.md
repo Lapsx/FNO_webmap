@@ -13,6 +13,10 @@ Este projeto tem o duplo propósito de:
   * **Comprimento de Kuhn ($b$):** Controle a rigidez da cadeia polimérica.
   * **Comprimento de Debye ($\kappa$):** Altere a blindagem iônica e o raio de interação eletrostática do meio.
   * **Parâmetro de Flory-Huggins ($u$):** Controle a qualidade do solvente (bom solvente vs. mau solvente) forçando o inchaço ou o colapso da nuvem.
+* **Ferramentas Analíticas e Termodinâmicas:**
+  * **Métricas Físicas em Tempo Real:** Cálculo automático de Massa Total, Centro de Massa e Raio de Giração ($R_g$) usando integrais espaciais sobre a matriz predita pela FNO.
+  * **Termômetro de Transição de Fase:** Detecção heurística instantânea de transições estruturais *Coil-Globule* (Inchaço vs. Colapso) da nuvem polimérica.
+  * **Comparador de Estados:** Capacidade de salvar uma solução base e extrair um "Mapa de Diferença" contra uma nova configuração paramétrica para avaliar a migração de densidade.
 * **Histórico de Treinamento:** Acompanhe a convergência do modelo paramétrico da FNO na aba dedicada, visualizando a *Loss* em escala logarítmica.
 
 ## 🏗️ Arquitetura do Sistema

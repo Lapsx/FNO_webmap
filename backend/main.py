@@ -60,7 +60,7 @@ try:
         model.eval()
         print("Modelo FNO Paramétrico carregado e pronto para latência zero!")
     else:
-        print("Aviso: Pesos do modelo paramétrico não encontrados. Usando inicialização aleatória até que o treinamento termine.")
+        print("Aviso: Pesos do modelo paramétrico não encontrados.")
 except Exception as e:
     print(f"Erro ao carregar os pesos da FNO: {e}")
 
@@ -79,34 +79,31 @@ class PredictionRequest(BaseModel):
     kappa: float
     u: float
 
+class CompareRequest(BaseModel):
+    stateA: PredictionRequest
+    stateB: PredictionRequest
+
 # ==========================================
-# 4. Rota de Inferência Instantânea Paramétrica
+# Funções Auxiliares
 # ==========================================
-@app.post("/predict")
-async def predict_density(request: PredictionRequest):
-    # Base vazia de potencial
+def compute_density(charges, b_val, kappa_val, u_val):
     V = np.zeros((N, N))
-    
-    # Injetando Cargas Locais
-    for c in request.charges:
+    for c in charges:
         pos_x = x[c.x]
         pos_z = z[c.z]
         sigma = c.r * dx * 1.5 
         V += c.q * np.exp(-((X - pos_x)**2 + (Z - pos_z)**2) / (2 * sigma**2))
 
-    # A Física da Partícula Sólida
     V_clean = np.copy(V)
     V_clean[R < a] = 10.0
     
-    # Preparando Tensor PyTorch [1, N, N, 6]
     v_tensor = torch.tensor(V_clean, dtype=torch.float32)
     x_tensor = torch.tensor(X, dtype=torch.float32)
     z_tensor = torch.tensor(Z, dtype=torch.float32)
     
-    # Parâmetros Expandidos
-    b_plane = torch.full((N, N), request.b, dtype=torch.float32)
-    kappa_plane = torch.full((N, N), request.kappa, dtype=torch.float32)
-    u_plane = torch.full((N, N), request.u, dtype=torch.float32)
+    b_plane = torch.full((N, N), b_val, dtype=torch.float32)
+    kappa_plane = torch.full((N, N), kappa_val, dtype=torch.float32)
+    u_plane = torch.full((N, N), u_val, dtype=torch.float32)
     
     inputs = torch.zeros(1, N, N, 6, dtype=torch.float32, device=device)
     inputs[0, :, :, 0] = v_tensor
@@ -124,19 +121,18 @@ async def predict_density(request: PredictionRequest):
         density = np.zeros((N, N))
     
     density[R < a] = np.nan
-    
-    # Convertendo para Base64
+    return density
+
+def create_plot_base64(X_grid, Z_grid, matrix, cmap, label, vmin=None, vmax=None):
     fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
     fig.patch.set_facecolor('black')
     ax.set_facecolor('black')
     
-    cax = ax.contourf(X, Z, density, levels=50, cmap='inferno')
-    
-    # Adicionando a legenda (colorbar)
+    cax = ax.contourf(X_grid, Z_grid, matrix, levels=50, cmap=cmap, vmin=vmin, vmax=vmax)
     cbar = fig.colorbar(cax, ax=ax, fraction=0.046, pad=0.04)
     cbar.ax.tick_params(colors='white')
     cbar.outline.set_edgecolor('white')
-    cbar.set_label('Densidade Polimérica', color='white', labelpad=10)
+    cbar.set_label(label, color='white', labelpad=10)
     
     circle = plt.Circle((0, 0), a, color='#1e293b', zorder=10)
     ax.add_artist(circle)
@@ -156,11 +152,70 @@ async def predict_density(request: PredictionRequest):
     plt.close(fig)
     
     buf.seek(0)
-    img_b64 = base64.b64encode(buf.read()).decode('utf-8')
+    return base64.b64encode(buf.read()).decode('utf-8')
+
+# ==========================================
+# 4. Rota de Inferência
+# ==========================================
+@app.post("/predict")
+async def predict_density(request: PredictionRequest):
+    density = compute_density(request.charges, request.b, request.kappa, request.u)
+    
+    # 1. Gerar Imagem
+    img_b64 = create_plot_base64(X, Z, density, 'inferno', 'Densidade Polimérica')
+    
+    # 2. Cálculos Quantitativos (Massa, Centro de Massa, Raio de Giração)
+    valid_mask = ~np.isnan(density)
+    valid_density = density[valid_mask]
+    
+    # Garantir que não há densidades negativas (artefato numérico)
+    valid_density = np.clip(valid_density, 0, None)
+    mass = float(np.sum(valid_density) * dx * dx)
+    
+    if mass > 1e-6:
+        com_x = float(np.sum(X[valid_mask] * valid_density) * dx * dx / mass)
+        com_z = float(np.sum(Z[valid_mask] * valid_density) * dx * dx / mass)
+        rg_sq = np.sum(((X[valid_mask] - com_x)**2 + (Z[valid_mask] - com_z)**2) * valid_density) * dx * dx / mass
+        rg = float(np.sqrt(rg_sq))
+    else:
+        com_x, com_z, rg = 0.0, 0.0, 0.0
+        
+    # 3. Heurística Termodinâmica de Fase (Termômetro)
+    phase = "Estável (Intermediário)"
+    if request.u > 0.2 and rg < 2.0:
+        phase = "Colapsado (Globule)"
+    elif request.u < -0.2:
+        phase = "Inchado (Coil)"
+        
+    return {
+        "image": img_b64,
+        "metrics": {
+            "mass": mass,
+            "com_x": com_x,
+            "com_z": com_z,
+            "rg": rg,
+            "phase": phase
+        }
+    }
+
+# ==========================================
+# 5. Rota de Comparação
+# ==========================================
+@app.post("/compare")
+async def compare_states(request: CompareRequest):
+    densityA = compute_density(request.stateA.charges, request.stateA.b, request.stateA.kappa, request.stateA.u)
+    densityB = compute_density(request.stateB.charges, request.stateB.b, request.stateB.kappa, request.stateB.u)
+    
+    diff = densityB - densityA
+    max_val = np.nanmax(np.abs(diff))
+    if np.isnan(max_val) or max_val == 0:
+        max_val = 1.0 # fallback
+        
+    img_b64 = create_plot_base64(X, Z, diff, 'RdBu_r', 'Diferença de Densidade (B - A)', vmin=-max_val, vmax=max_val)
     return {"image": img_b64}
 
 # ==========================================
-# 5. Rota do Histórico de Loss
+# 6. Rota do Histórico de Loss
 # ==========================================
 @app.get("/loss")
 async def get_loss_history():
@@ -174,7 +229,7 @@ async def get_loss_history():
         test_loss = history['test']
         
         fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
-        fig.patch.set_facecolor('#1e1030') # Roxo opaco solicitado
+        fig.patch.set_facecolor('#1e1030')
         ax.set_facecolor('#1e1030')
         
         ax.plot(train_loss, label='Train Loss', color='#818cf8', linewidth=2)
@@ -184,7 +239,6 @@ async def get_loss_history():
         ax.set_ylabel('Loss (MSE)', color='white')
         
         ax.legend(facecolor='black', edgecolor='white', labelcolor='white')
-        
         ax.grid(color='white', alpha=0.1, linestyle='--')
         ax.tick_params(colors='white')
         for spine in ax.spines.values():
