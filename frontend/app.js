@@ -193,3 +193,22 @@ requestPrediction();
 fetchLoss();
 setInterval(fetchLoss, 10000); // Atualiza o gráfico de loss a cada 10 segundos
 
+
+// Lógica de Troca de Abas
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active class from all buttons and contents
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+
+        // Add active class to clicked button and target content
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-tab');
+        document.getElementById(targetId).classList.add('active');
+    });
+});
+
+

@@ -131,6 +131,11 @@ async def predict_density(request: PredictionRequest):
     ax.set_facecolor('black')
     
     cax = ax.contourf(X, Z, density, levels=50, cmap='inferno')
+    
+    # Adicionando a legenda (colorbar)
+    cbar = fig.colorbar(cax, ax=ax, fraction=0.046, pad=0.04)
+    cbar.ax.tick_params(colors='white')
+    
     circle = plt.Circle((0, 0), a, color='#1e293b', zorder=10)
     ax.add_artist(circle)
     

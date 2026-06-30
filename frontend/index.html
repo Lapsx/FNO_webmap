@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FNO Quantum Sandbox</title>
+    <title>FNO Polymer Sandbox</title>
     <!-- Fontes modernas -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,25 +13,30 @@
 <body>
     <div class="container">
         <header>
-            <h1>FNO Quantum Sandbox</h1>
+            <h1>FNO Polymer Sandbox</h1>
             <p>Posicione campos locais e veja a nuvem polimérica reagir em milissegundos.</p>
+            
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="sandbox-view">Simulador</button>
+                <button class="tab-btn" data-tab="history-view">Histórico de Treinamento</button>
+            </div>
         </header>
 
-        <main class="dashboard">
+        <main class="dashboard tab-content active" id="sandbox-view">
             <!-- Painel de Controle -->
             <aside class="control-panel glass-panel">
                 <h2>Parâmetros do Polímero</h2>
 
                 <div class="control-group">
-                    <label>Comprimento de Kuhn (b)</label>
+                    <label>Comprimento de Kuhn (b) <span class="info-icon" title="Controla a rigidez local da cadeia do polímero. Valores maiores indicam polímeros mais rígidos.">ℹ️</span></label>
                     <div class="slider-container">
                         <span id="kuhnValue">1.0</span>
-                        <input type="range" id="kuhnSlider" min="0.5" max="2.0" value="1.0" step="0.1">
+                        <input type="range" id="kuhnSlider" min="0.1" max="2.0" value="1.0" step="0.1">
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label>Comprimento de Debye (κ)</label>
+                    <label>Comprimento de Debye (κ) <span class="info-icon" title="Controla o quão longe as interações eletrostáticas atuam (blindagem iônica). Valores menores = interações de longo alcance.">ℹ️</span></label>
                     <div class="slider-container">
                         <span id="debyeValue">1.0</span>
                         <input type="range" id="debyeSlider" min="0.1" max="5.0" value="1.0" step="0.1">
@@ -39,7 +44,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Flory-Huggins Efetivo (u)</label>
+                    <label>Flory-Huggins Efetivo (u) <span class="info-icon" title="Controla a qualidade do solvente. u < 0 significa bom solvente (polímero incha), u > 0 significa mau solvente (polímero colapsa).">ℹ️</span></label>
                     <div class="slider-container">
                         <span id="floryValue">0.0</span>
                         <input type="range" id="florySlider" min="-1.0" max="1.0" value="0.0" step="0.1">
@@ -51,7 +56,7 @@
                 <h2>Cargas Locais</h2>
                 
                 <div class="control-group">
-                    <label>Polaridade (Força da Carga)</label>
+                    <label>Polaridade (Força da Carga) <span class="info-icon" title="Define se a carga inserida será atrativa ou repulsiva, e a sua força.">ℹ️</span></label>
                     <div class="slider-container">
                         <span id="chargeValue">Atrativo (Positivo)</span>
                         <input type="range" id="chargeSlider" min="-10" max="10" value="5" step="0.5">
@@ -59,7 +64,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Raio de Ação (Abertura do Campo)</label>
+                    <label>Raio de Ação (Abertura) <span class="info-icon" title="Define o quão largo é o campo potencial ao redor da carga inserida.">ℹ️</span></label>
                     <div class="slider-container">
                         <input type="range" id="radiusSlider" min="1" max="15" value="5" step="1">
                     </div>
@@ -90,11 +95,15 @@
                         <div id="loading" class="spinner" style="display: none;"></div>
                     </div>
                 </div>
-                
+            </section>
+        </main>
+        
+        <main class="dashboard tab-content" id="history-view">
+            <section class="visuals" style="flex: 1; justify-content: center;">
                 <div class="canvas-container glass-panel">
                     <h3>Histórico de Treinamento (Loss)</h3>
                     <p class="instruction">FNO Paramétrica</p>
-                    <div class="output-wrapper">
+                    <div class="output-wrapper" style="width: 500px; height: 500px;">
                         <img id="lossImage" src="" alt="Loss history" style="display: none;">
                         <div id="lossLoading" class="spinner"></div>
                     </div>
