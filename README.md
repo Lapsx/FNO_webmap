@@ -32,7 +32,15 @@ O projeto é dividido de forma enxuta:
 
 **Aviso Importante:** Esta WebApp exige os pesos treinados (`fno_parametric_best_model.pth`) e a arquitetura (`fno_parametric_architecture.py`) que foram originalmente gerados no repositório de treinamento (Scientific Machine Learning). Certifique-se de que o backend aponte para esses recursos no diretório correto.
 
-### Subindo o Servidor
+### Inicialização Rápida (Recomendado)
+A forma mais fácil de executar o projeto no Linux é utilizando o script de inicialização que sobe o backend e abre o frontend automaticamente em um único clique:
+```bash
+./iniciar_webapp.sh
+```
+*(Você também pode dar um duplo clique no arquivo `iniciar_webapp.sh` no seu gerenciador de arquivos)*
+
+### Inicialização Manual
+Se preferir subir os serviços manualmente:
 1. Navegue até a pasta do backend:
 ```bash
 cd backend
