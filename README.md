@@ -4,7 +4,7 @@ Um laboratório computacional e interativo via web criado para simular, estudar 
 
 Este projeto tem o duplo propósito de:
 1. **Física de Polímeros:** Fornecer uma ferramenta visual e intuitiva para o estudo da resposta estrutural de polímeros sob variação de parâmetros fundamentais (Rigidez da cadeia, Qualidade do solvente e Blindagem iônica).
-2. **Scientific Machine Learning (SciML):** Demonstrar o poder formidável de **Fourier Neural Operators (FNOs)** na resolução de PDEs (Equações Diferenciais Parciais) e campos físicos complexos. A inferência da densidade polimérica é feita quase instantaneamente por uma IA, substituindo integrais de trajetória (Self-Consistent Field Theory - SCFT) que normalmente levariam horas para convergir.
+2. **Scientific Machine Learning (SciML):** Demonstrar o poder do machine learning científico com o uso de **Fourier Neural Operators (FNOs)** na resolução de PDEs (Equações Diferenciais Parciais) e campos físicos complexos. A inferência da densidade polimérica é feita quase instantaneamente por uma IA, substituindo integrais de trajetória (Self-Consistent Field Theory - SCFT) que normalmente levariam horas para convergir.
 
 ## 🌟 Funcionalidades Atuais
 
@@ -18,7 +18,7 @@ Este projeto tem o duplo propósito de:
 ## 🏗️ Arquitetura do Sistema
 
 O projeto é dividido de forma enxuta:
-* **Frontend:** Interface moderna construída puramente em HTML5, CSS3 (com Glassmorphism) e Vanilla JavaScript. Utiliza a API do Canvas para capturar a topologia interativa do usuário.
+* **Frontend:** Interface  construída puramente em HTML5, CSS3 (com Glassmorphism) e Vanilla JavaScript. Utiliza a API do Canvas para capturar a topologia interativa do usuário.
 * **Backend:** API leve e ultra-rápida construída em **FastAPI** (Python). Recebe a topologia do Canvas, acopla os parâmetros físicos (Kuhn, Debye, Flory) num tensor 6D, roda a inferência via `PyTorch` (FNO Paramétrica) e devolve a densidade topológica serializada via Base64.
 * **Motor Matemático:** As predições de densidade são convertidas visualmente em *Heatmaps* por meio da biblioteca `Matplotlib` no backend antes de chegarem ao usuário final.
 
