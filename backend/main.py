@@ -13,8 +13,7 @@ import matplotlib.pyplot as plt
 # 1. Ajuste de Paths para importar a FNO Paramétrica
 # ==========================================
 current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(current_dir, "../../Scientific Machine Learning/FNO"))
-fno_core_path = os.path.join(project_root, "scripts/fno_core")
+fno_core_path = os.path.join(current_dir, "model_core")
 sys.path.append(fno_core_path)
 
 try:
@@ -54,7 +53,7 @@ R = np.sqrt(X**2 + Z**2)
 model = None
 try:
     model = ParametricFNO2d(modes1=16, modes2=16, width=64).to(device)
-    weights_path = os.path.join(project_root, "models/fno_parametric_best_model.pth")
+    weights_path = os.path.join(current_dir, "model_core/fno_parametric_best_model.pth")
     
     if os.path.exists(weights_path):
         model.load_state_dict(torch.load(weights_path, map_location=device, weights_only=True))
@@ -165,7 +164,7 @@ async def predict_density(request: PredictionRequest):
 # ==========================================
 @app.get("/loss")
 async def get_loss_history():
-    loss_path = os.path.join(project_root, "models/parametric_loss_history.pt")
+    loss_path = os.path.join(current_dir, "model_core/parametric_loss_history.pt")
     if not os.path.exists(loss_path):
         raise HTTPException(status_code=404, detail="Loss history not found yet")
         
