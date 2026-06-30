@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNO Quantum Sandbox</title>
+    <!-- Fontes modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FNO Quantum Sandbox</h1>
+            <p>Posicione campos locais e veja a nuvem polimérica reagir em milissegundos.</p>
+        </header>
+
+        <main class="dashboard">
+            <!-- Painel de Controle -->
+            <aside class="control-panel glass-panel">
+                <h2>Parâmetros do Polímero</h2>
+
+                <div class="control-group">
+                    <label>Comprimento de Kuhn (b)</label>
+                    <div class="slider-container">
+                        <span id="kuhnValue">1.0</span>
+                        <input type="range" id="kuhnSlider" min="0.5" max="2.0" value="1.0" step="0.1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Comprimento de Debye (κ)</label>
+                    <div class="slider-container">
+                        <span id="debyeValue">1.0</span>
+                        <input type="range" id="debyeSlider" min="0.1" max="5.0" value="1.0" step="0.1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Flory-Huggins Efetivo (u)</label>
+                    <div class="slider-container">
+                        <span id="floryValue">0.0</span>
+                        <input type="range" id="florySlider" min="-1.0" max="1.0" value="0.0" step="0.1">
+                    </div>
+                </div>
+
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 1.5rem 0;">
+
+                <h2>Cargas Locais</h2>
+                
+                <div class="control-group">
+                    <label>Polaridade (Força da Carga)</label>
+                    <div class="slider-container">
+                        <span id="chargeValue">Atrativo (Positivo)</span>
+                        <input type="range" id="chargeSlider" min="-10" max="10" value="5" step="0.5">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Raio de Ação (Abertura do Campo)</label>
+                    <div class="slider-container">
+                        <input type="range" id="radiusSlider" min="1" max="15" value="5" step="1">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="clearBtn" class="btn btn-danger">Limpar Tudo</button>
+                </div>
+                
+                <div class="status-box">
+                    <span id="latency">Latência FNO: -- ms</span>
+                </div>
+            </aside>
+
+            <!-- Painel de Visualização -->
+            <section class="visuals">
+                <div class="canvas-container glass-panel">
+                    <h3>Campo Potencial V(x,z) <span class="badge">Interativo</span></h3>
+                    <p class="instruction">Clique no grid para adicionar fontes de campo.</p>
+                    <canvas id="inputCanvas" width="400" height="400"></canvas>
+                </div>
+
+                <div class="canvas-container glass-panel">
+                    <h3>Densidade Probabilística (Previsão FNO)</h3>
+                    <p class="instruction">Tempo Real</p>
+                    <div class="output-wrapper">
+                        <img id="outputImage" src="" alt="Aguardando inputs..." style="display: none;">
+                        <div id="loading" class="spinner" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="canvas-container glass-panel">
+                    <h3>Histórico de Treinamento (Loss)</h3>
+                    <p class="instruction">FNO Paramétrica</p>
+                    <div class="output-wrapper">
+                        <img id="lossImage" src="" alt="Loss history" style="display: none;">
+                        <div id="lossLoading" class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
