@@ -196,7 +196,7 @@ canvas:hover {
 #outputImage {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 /* Loading Spinner */
