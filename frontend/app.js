@@ -108,6 +108,23 @@ function drawCanvas() {
 // Limpa tudo
 clearBtn.addEventListener('click', () => {
     charges = [];
+    
+    // Reset parameters
+    kuhnSlider.value = 1.0;
+    kuhnValue.textContent = '1.0';
+    
+    debyeSlider.value = 1.0;
+    debyeValue.textContent = '1.0';
+    
+    florySlider.value = 0.0;
+    floryValue.textContent = '0.0';
+    
+    chargeSlider.value = 5;
+    chargeValueLabel.textContent = `Repulsivo (+5)`;
+    chargeValueLabel.style.color = '#fca5a5';
+    
+    radiusSlider.value = 5;
+
     drawCanvas();
     outputImage.style.display = 'none';
     requestPrediction();
