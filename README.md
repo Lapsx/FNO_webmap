@@ -1,3 +1,80 @@
+[🇺🇸 English Version](#-english-version) | [🇧🇷 Versão em Português](#-versão-em-português)
+
+---
+
+<a id="english-version"></a>
+## 🇺🇸 English Version
+
+# FNO Polymer Sandbox ⚛️ (v0.5)
+
+A computational and interactive web-based laboratory created to simulate, study, and investigate the thermodynamic behavior of polymer clouds under the influence of interactive charge fields in real-time.
+
+This project has a dual purpose:
+1. **Polymer Physics:** To provide a visual and intuitive tool for studying the structural response of polymers under the variation of fundamental parameters (Chain rigidity, Solvent quality, and Ionic shielding).
+2. **Scientific Machine Learning (SciML):** To demonstrate the power of scientific machine learning by using **Fourier Neural Operators (FNOs)** in solving PDEs (Partial Differential Equations) and complex physical fields. The inference of polymer density is done almost instantaneously by an AI, replacing path integrals (Self-Consistent Field Theory - SCFT) that would normally take hours to converge.
+
+## 🌟 Current Features
+
+* **Real-Time Inference:** Click on the screen to position local charges (attractive or repulsive) and watch the neural network predict the rearrangement of the polymer cloud in milliseconds.
+* **Parametric Adjustment (Dynamic Physics):**
+  * **Kuhn Length ($b$):** Control the rigidity of the polymer chain.
+  * **Debye Length ($\kappa$):** Change the ionic shielding and the radius of electrostatic interaction in the medium.
+  * **Flory-Huggins Parameter ($u$):** Control the solvent quality (good solvent vs. poor solvent), forcing the cloud to swell or collapse.
+* **Analytical and Thermodynamic Tools:**
+  * **Real-Time Physical Metrics:** Automatic calculation of Total Mass, Center of Mass, and Radius of Gyration ($R_g$) using spatial integrals over the matrix predicted by the FNO.
+  * **Phase Transition Thermometer:** Instant heuristic detection of structural *Coil-Globule* transitions (Swelling vs. Collapse) of the polymer cloud.
+  * **State Comparator:** Ability to save a base solution and extract a "Difference Map" against a new parametric configuration to evaluate density migration.
+* **Training History:** Track the convergence of the FNO parametric model in the dedicated tab, viewing the *Loss* on a logarithmic scale.
+
+## 🏗️ System Architecture
+
+The project is concisely divided:
+* **Frontend:** Interface built purely in HTML5, CSS3 (with Glassmorphism), and Vanilla JavaScript. It uses the Canvas API to capture the user's interactive topology.
+* **Backend:** Lightweight and ultra-fast API built in **FastAPI** (Python). It receives the topology from the Canvas, couples the physical parameters (Kuhn, Debye, Flory) into a 6D tensor, runs the inference via `PyTorch` (Parametric FNO), and returns the serialized topological density via Base64.
+* **Mathematical Engine:** The density predictions are visually converted into *Heatmaps* through the `Matplotlib` library in the backend before reaching the end user.
+
+## 🚀 How to Run Locally
+
+### Prerequisites
+- Python 3.10+
+- PyTorch (compatible with your OS/GPU)
+- FastAPI and Uvicorn
+- Matplotlib and NumPy
+
+**Important Notice:** This WebApp requires the trained weights (`fno_parametric_best_model.pth`) and architecture (`fno_parametric_architecture.py`) which were originally generated in the training repository (Scientific Machine Learning). Make sure the backend points to these resources in the correct directory.
+
+### Quick Start (Recommended)
+The easiest way to run the project on Linux is by using the initialization script that spins up the backend and opens the frontend automatically with a single click:
+```bash
+./iniciar_webapp.sh
+```
+*(You can also simply double-click the `iniciar_webapp.sh` file in your file manager)*
+
+### Manual Start
+If you prefer to start the services manually:
+1. Navigate to the backend folder:
+```bash
+cd backend
+```
+2. Start the API with Uvicorn:
+```bash
+uvicorn main:app --reload
+```
+3. Open the `frontend/index.html` file in any modern browser. (Or use extensions like VS Code Live Server).
+
+## 🔮 Next Steps (Roadmap v1.0)
+- General improvements in UX/UI and responsiveness.
+- Inclusion of new topological constraints.
+- Deep investigative extrapolation: pushing the artificial intelligence to limits outside its training spectrum to map mathematical hallucinations of the FNO.
+
+---
+*This project is a bridge between Statistical Thermodynamics and the state of the art in Deep Learning for Physics.*
+
+---
+
+<a id="versão-em-português"></a>
+## 🇧🇷 Versão em Português
+
 # FNO Polymer Sandbox ⚛️ (v0.5)
 
 Um laboratório computacional e interativo via web criado para simular, estudar e investigar o comportamento termodinâmico de nuvens poliméricas sob influência de campos de carga interativos em tempo real.
