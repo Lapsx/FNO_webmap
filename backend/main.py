@@ -219,8 +219,122 @@ async def compare_states(request: CompareRequest):
     img_b64 = create_plot_base64(X, Z, diff, 'RdBu_r', 'Diferença de Densidade (B - A)', vmin=-max_val, vmax=max_val)
     return {"image": img_b64}
 
+class ExperimentRequest(BaseModel):
+    charges: list[Charge]
+    b: float
+    kappa: float
+    u: float
+    sweep_type: str
+
 # ==========================================
-# 6. Rota do Histórico de Loss
+# 6. Rota dos Experimentos (Coil-Globule, Salinidade, Rigidez)
+# ==========================================
+@app.post("/experiment")
+async def run_experiment(request: ExperimentRequest):
+    pts = 40
+    if request.sweep_type == "u":
+        values = np.linspace(-1.0, 1.0, pts)
+        xlabel = "Interação Efetiva (u)"
+        title = "Diagrama de Fases (Transição Coil-Globule)"
+        color = "#38bdf8"
+    elif request.sweep_type == "kappa":
+        values = np.linspace(0.1, 5.0, pts)
+        xlabel = "Comprimento de Debye Inverso (kappa) - Salinidade"
+        title = "Efeito de Salinidade na Estrutura Polimérica"
+        color = "#fca5a5"
+    elif request.sweep_type == "b":
+        values = np.linspace(0.5, 2.0, pts)
+        xlabel = "Comprimento de Kuhn (b) - Rigidez"
+        title = "Espectroscopia de Rigidez Polimérica"
+        color = "#c084fc"
+    else:
+        values = np.linspace(-1.0, 1.0, pts)
+        xlabel = "Interação Efetiva (u)"
+        title = "Diagrama de Fases"
+        color = "#38bdf8"
+        
+    rg_values = []
+    
+    for val in values:
+        if request.sweep_type == "u":
+            density = compute_density(request.charges, request.b, request.kappa, float(val))
+        elif request.sweep_type == "kappa":
+            density = compute_density(request.charges, request.b, float(val), request.u)
+        elif request.sweep_type == "b":
+            density = compute_density(request.charges, float(val), request.kappa, request.u)
+            
+        valid_mask = ~np.isnan(density)
+        valid_density = density[valid_mask]
+        valid_density = np.clip(valid_density, 0, None)
+        
+        mass = float(np.sum(valid_density) * dx * dx)
+        if mass > 1e-6:
+            com_x = float(np.sum(X[valid_mask] * valid_density) * dx * dx / mass)
+            com_z = float(np.sum(Z[valid_mask] * valid_density) * dx * dx / mass)
+            rg_sq = np.sum(((X[valid_mask] - com_x)**2 + (Z[valid_mask] - com_z)**2) * valid_density) * dx * dx / mass
+            rg = float(np.sqrt(rg_sq))
+        else:
+            rg = 0.0
+            
+        rg_values.append(rg)
+        
+    fig, ax = plt.subplots(figsize=(6.5, 4), dpi=100)
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('black')
+    
+    ax.plot(values, rg_values, marker='o', color=color, linewidth=2, markersize=4)
+    
+    # Análise de Pontos Críticos (Derivada Numérica)
+    rg_array = np.array(rg_values)
+    val_array = np.array(values)
+    
+    # Suavização simples para evitar ruído e cálculo do gradiente
+    if len(val_array) > 5 and np.max(rg_array) > 0.1:
+        drg = np.gradient(rg_array, val_array)
+        idx_crit = np.argmax(np.abs(drg))
+        x_c = val_array[idx_crit]
+        y_c = rg_array[idx_crit]
+        
+        # Linha vertical
+        ax.axvline(x_c, color='#fbbf24', linestyle='--', alpha=0.8, linewidth=1.5)
+        
+        if request.sweep_type == "u":
+            text_str = f"Ponto Theta ($\\theta$): u = {x_c:.2f}\n[Inflexão Solvatação]"
+        elif request.sweep_type == "kappa":
+            text_str = f"Transição Ads/Des: $\\kappa$ = {x_c:.2f}\n[Limite Eletrostático]"
+        elif request.sweep_type == "b":
+            text_str = f"Fronteira Flex/Ríg: b = {x_c:.2f}\n[Limite de Entropia]"
+        else:
+            text_str = f"Ponto Crítico: {x_c:.2f}"
+            
+        # Posição do texto para não bater na linha (se x_c está muito à direita, coloca na esquerda e vice-versa)
+        ha = 'left' if idx_crit < len(val_array)/2 else 'right'
+        offset = 0.05 * (np.max(val_array) - np.min(val_array))
+        text_x = x_c + offset if ha == 'left' else x_c - offset
+        
+        ax.text(text_x, np.mean(rg_array), text_str, color='#fbbf24', fontsize=9, ha=ha, va='center',
+                bbox=dict(facecolor='black', alpha=0.7, edgecolor='none'))
+    
+    ax.set_title(title, color='white')
+    ax.set_xlabel(xlabel, color='white')
+    ax.set_ylabel("Raio de Giração (Rg)", color='white')
+    
+    ax.grid(color='white', alpha=0.2, linestyle='--')
+    ax.tick_params(colors='white')
+    for spine in ax.spines.values():
+        spine.set_color('white')
+        spine.set_alpha(0.5)
+        
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', facecolor='black', bbox_inches='tight', dpi=100)
+    plt.close(fig)
+    buf.seek(0)
+    
+    img_b64 = base64.b64encode(buf.read()).decode('utf-8')
+    return {"image": img_b64}
+
+# ==========================================
+# 7. Rota do Histórico de Loss
 # ==========================================
 @app.get("/loss")
 async def get_loss_history():

@@ -31,6 +31,11 @@ const diffContainer = document.getElementById('diffContainer');
 const diffImage = document.getElementById('diffImage');
 const diffLoading = document.getElementById('diffLoading');
 
+const phaseDiagramBtn = document.getElementById('phaseDiagramBtn');
+const phaseDiagramContainer = document.getElementById('phaseDiagramContainer');
+const phaseDiagramImage = document.getElementById('phaseDiagramImage');
+const phaseDiagramLoading = document.getElementById('phaseDiagramLoading');
+
 let charges = [];
 const N = 100; // Resolução do modelo FNO
 
@@ -138,6 +143,7 @@ clearBtn.addEventListener('click', () => {
     savedStateA = null;
     compareBtn.disabled = true;
     diffContainer.style.display = 'none';
+    phaseDiagramContainer.style.display = 'none';
 
     drawCanvas();
     outputImage.style.display = 'none';
@@ -229,6 +235,43 @@ compareBtn.addEventListener('click', async () => {
     } catch (err) {
         console.error("Erro na Comparação:", err);
         diffLoading.style.display = 'none';
+    }
+});
+
+// Diagrama de Fases e Experimentos
+const experimentTypeSelect = document.getElementById('experimentType');
+
+phaseDiagramBtn.addEventListener('click', async () => {
+    if (!currentPayload) return;
+    
+    phaseDiagramContainer.style.display = 'flex';
+    phaseDiagramImage.style.display = 'none';
+    phaseDiagramLoading.style.display = 'block';
+    
+    const experimentPayload = {
+        ...currentPayload,
+        sweep_type: experimentTypeSelect ? experimentTypeSelect.value : 'u'
+    };
+    
+    try {
+        const response = await fetch('http://localhost:8000/experiment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(experimentPayload)
+        });
+
+        if(response.ok) {
+            const data = await response.json();
+            phaseDiagramImage.src = "data:image/png;base64," + data.image;
+            phaseDiagramImage.style.display = 'block';
+            phaseDiagramLoading.style.display = 'none';
+        } else {
+            console.error("Erro do servidor:", response.status);
+            phaseDiagramLoading.style.display = 'none';
+        }
+    } catch (err) {
+        console.error("Erro ao gerar diagrama de fases:", err);
+        phaseDiagramLoading.style.display = 'none';
     }
 });
 

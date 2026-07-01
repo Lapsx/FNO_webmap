@@ -96,22 +96,43 @@
                     </div>
                 </div>
                 
-                <div class="metrics-container glass-panel" style="width: 400px; display: flex; flex-direction: column;">
-                    <h3>Termodinâmica e Fase</h3>
-                    <div id="phaseThermometer" class="alert-box">Fase: <span id="phaseValue">Aguardando...</span></div>
-                    <ul class="metrics-list">
-                        <li>Massa Total: <span id="massValue">--</span></li>
-                        <li>Raio de Giração (Rg): <span id="rgValue">--</span></li>
-                        <li>Centro de Massa (X, Z): <span id="comValue">--</span></li>
-                    </ul>
-                    
-                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
-                    
-                    <h3>Comparador de Soluções</h3>
-                    <p class="instruction">Salve um estado e altere os parâmetros para comparar.</p>
-                    <div class="button-group" style="margin-top: 0.5rem;">
-                        <button id="saveStateBtn" class="btn btn-primary">Salvar Estado Atual (A)</button>
-                        <button id="compareBtn" class="btn btn-secondary" disabled>Analisar Diferença (Atual - A)</button>
+                <div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 2rem; width: 100%; justify-content: flex-start; align-items: stretch;">
+                    <div class="metrics-container glass-panel" style="width: 400px; display: flex; flex-direction: column;">
+                        <h3>Termodinâmica e Fase</h3>
+                        <div id="phaseThermometer" class="alert-box">Fase: <span id="phaseValue">Aguardando...</span></div>
+                        <ul class="metrics-list">
+                            <li>Massa Total: <span id="massValue">--</span></li>
+                            <li>Raio de Giração (Rg): <span id="rgValue">--</span></li>
+                            <li>Centro de Massa (X, Z): <span id="comValue">--</span></li>
+                        </ul>
+                        
+                        <div style="margin-top: 1rem;">
+                            <label style="color: #94a3b8; font-size: 0.9rem;">Tipo de Experimento:</label>
+                            <select id="experimentType" style="width: 100%; padding: 0.5rem; background: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                                <option value="u">Transição de Fase (Coil-Globule)</option>
+                                <option value="kappa">Efeito de Salinidade (Debye)</option>
+                                <option value="b">Espectroscopia de Rigidez (Kuhn)</option>
+                            </select>
+                            <button id="phaseDiagramBtn" class="btn btn-secondary" style="width: 100%;">Rodar Experimento Visual</button>
+                        </div>
+                        
+                        <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                        
+                        <h3>Comparador de Soluções</h3>
+                        <p class="instruction">Salve um estado e altere os parâmetros para comparar.</p>
+                        <div class="button-group" style="margin-top: 0.5rem;">
+                            <button id="saveStateBtn" class="btn btn-primary">Salvar Estado Atual (A)</button>
+                            <button id="compareBtn" class="btn btn-secondary" disabled>Analisar Diferença (Atual - A)</button>
+                        </div>
+                    </div>
+
+                    <div class="canvas-container glass-panel" id="phaseDiagramContainer" style="display: none;">
+                        <h3>Laboratório Virtual <span class="badge" style="background: #38bdf8; color: black;">Experimento</span></h3>
+                        <p class="instruction">Análise Termodinâmica e Estrutural (Tempo Real)</p>
+                        <div class="output-wrapper" style="width: 550px; height: 350px;">
+                            <img id="phaseDiagramImage" src="" alt="Resultado do Experimento" style="display: none; width: 100%; height: 100%; object-fit: contain;">
+                            <div id="phaseDiagramLoading" class="spinner" style="display: none;"></div>
+                        </div>
                     </div>
                 </div>
 
