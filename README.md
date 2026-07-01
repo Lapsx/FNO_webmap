@@ -11,7 +11,7 @@ A computational and interactive web-based laboratory created to simulate, study,
 
 This project has a dual purpose:
 1. **Polymer Physics:** To provide a visual and intuitive tool for studying the structural response of polymers under the variation of fundamental parameters (Chain rigidity, Solvent quality, and Ionic shielding).
-2. **Scientific Machine Learning (SciML):** To demonstrate the power of scientific machine learning by using **Fourier Neural Operators (FNOs)** in solving PDEs (Partial Differential Equations) and complex physical fields. The inference of polymer density is done almost instantaneously by an AI, replacing path integrals (Self-Consistent Field Theory - SCFT) that would normally take hours to converge.
+2. **Scientific Machine Learning (SciML):** To demonstrate the power of scientific machine learning by using **Fourier Neural Operators (FNOs)** in solving PDEs (Partial Differential Equations) and complex physical fields. The inference of polymer density is done almost instantaneously by an Fourier Neural Operator, replacing path integrals (Self-Consistent Field Theory - SCFT) that would normally take hours to converge.
 
 ## 🌟 Current Features
 
@@ -81,7 +81,7 @@ Um laboratório computacional e interativo via web criado para simular, estudar 
 
 Este projeto tem o duplo propósito de:
 1. **Física de Polímeros:** Fornecer uma ferramenta visual e intuitiva para o estudo da resposta estrutural de polímeros sob variação de parâmetros fundamentais (Rigidez da cadeia, Qualidade do solvente e Blindagem iônica).
-2. **Scientific Machine Learning (SciML):** Demonstrar o poder do machine learning científico com o uso de **Fourier Neural Operators (FNOs)** na resolução de PDEs (Equações Diferenciais Parciais) e campos físicos complexos. A inferência da densidade polimérica é feita quase instantaneamente por uma IA, substituindo integrais de trajetória (Self-Consistent Field Theory - SCFT) que normalmente levariam horas para convergir.
+2. **Scientific Machine Learning (SciML):** Demonstrar o poder do machine learning científico com o uso de **Fourier Neural Operators (FNOs)** na resolução de PDEs (Equações Diferenciais Parciais) e campos físicos complexos. A inferência da densidade polimérica é feita quase instantaneamente por um Operador Neural de Fourier, substituindo integrais de trajetória (Self-Consistent Field Theory - SCFT) que normalmente levariam horas para convergir.
 
 ## 🌟 Funcionalidades Atuais
 
