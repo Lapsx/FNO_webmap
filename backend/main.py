@@ -88,11 +88,13 @@ class CompareRequest(BaseModel):
 # ==========================================
 def compute_density(charges, b_val, kappa_val, u_val):
     V = np.zeros((N, N))
+    epsilon = 0.1
     for c in charges:
         pos_x = x[c.x]
-        pos_z = z[c.z]
-        sigma = c.r * dx * 1.5 
-        V += c.q * np.exp(-((X - pos_x)**2 + (Z - pos_z)**2) / (2 * sigma**2))
+        pos_z = z[N - 1 - c.z] # Inverte Z pois o canvas HTML cresce para baixo e o plano cartesiano para cima
+        # Usando a mesma formulação Yukawa (Debye-Huckel) do treinamento V1
+        dist = np.sqrt((X - pos_x)**2 + (Z - pos_z)**2)
+        V += c.q * np.exp(-kappa_val * dist) / (dist + epsilon)
 
     V_clean = np.copy(V)
     V_clean[R < a] = 10.0
@@ -373,3 +375,97 @@ async def get_loss_history():
         return {"image": img_b64}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+# 8. Rota de Varredura de Multipolos
+# ==========================================
+class MultipoleExperimentRequest(BaseModel):
+    q_magnitude: float
+    b: float
+    kappa: float
+    u: float
+    sweep_type: str
+
+@app.post("/experiment_multipole")
+async def run_multipole_experiment(request: MultipoleExperimentRequest):
+    if request.sweep_type == "u":
+        values = np.linspace(-1.0, 1.0, 30)
+        xlabel = "Interação Solvente (u)"
+        title = f"Ponto Crítico vs Momento Multipolar (u_c)\nFixos: b={request.b:.2f}, \u03ba={request.kappa:.2f}"
+    elif request.sweep_type == "kappa":
+        values = np.linspace(0.1, 5.0, 30)
+        xlabel = "Screening Eletrostático (\u03ba)"
+        title = f"Ponto Crítico vs Momento Multipolar (\u03bac)\nFixos: u={request.u:.2f}, b={request.b:.2f}"
+    else: 
+        values = np.linspace(0.5, 2.0, 30)
+        xlabel = "Rigidez Kuhn (b)"
+        title = f"Ponto Crítico vs Momento Multipolar (b_c)\nFixos: u={request.u:.2f}, \u03ba={request.kappa:.2f}"
+
+    poles_list = [2, 4, 6, 8, 10]
+    critical_points = []
+    
+    for n_poles in poles_list:
+        charges = []
+        radius_grid = a * (N / L) # 12.5
+        center = N / 2
+        for i in range(n_poles):
+            angle = i * (2 * np.pi / n_poles)
+            cx = int(center + radius_grid * np.cos(angle))
+            cz = int(center + radius_grid * np.sin(angle))
+            q_val = request.q_magnitude if i % 2 == 0 else -request.q_magnitude
+            charges.append(Charge(x=cx, z=cz, q=q_val, r=2.0))
+        
+        rg_values = []
+        for val in values:
+            b_val = val if request.sweep_type == "b" else request.b
+            kappa_val = val if request.sweep_type == "kappa" else request.kappa
+            u_val = val if request.sweep_type == "u" else request.u
+            
+            density = compute_density(charges, b_val, kappa_val, u_val)
+            
+            valid_mask = ~np.isnan(density)
+            valid_density = density[valid_mask]
+            valid_density = np.clip(valid_density, 0, None)
+            mass = float(np.sum(valid_density) * dx * dx)
+            if mass > 1e-6:
+                com_x = float(np.sum(X[valid_mask] * valid_density) * dx * dx / mass)
+                com_z = float(np.sum(Z[valid_mask] * valid_density) * dx * dx / mass)
+                rg_sq = np.sum(((X[valid_mask] - com_x)**2 + (Z[valid_mask] - com_z)**2) * valid_density) * dx * dx / mass
+                rg = float(np.sqrt(rg_sq))
+            else:
+                rg = 0.0
+            rg_values.append(rg)
+            
+        rg_array = np.array(rg_values)
+        val_array = np.array(values)
+        if len(val_array) > 5 and np.max(rg_array) > 0.1:
+            drg = np.gradient(rg_array, val_array)
+            idx_crit = np.argmax(np.abs(drg))
+            critical_points.append(val_array[idx_crit])
+        else:
+            critical_points.append(np.nan)
+            
+    fig, ax = plt.subplots(figsize=(6.5, 4), dpi=100)
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('black')
+    
+    ax.plot(poles_list, critical_points, marker='s', color='#f43f5e', linewidth=2.5, markersize=8)
+    
+    ax.set_title(title, color='white')
+    ax.set_xlabel("Número de Polos na Macromolécula (n)", color='white')
+    ax.set_ylabel(f"Ponto Crítico ({request.sweep_type}_c)", color='white')
+    ax.set_xticks(poles_list)
+    
+    ax.grid(color='white', alpha=0.2, linestyle='--')
+    ax.tick_params(colors='white')
+    for spine in ax.spines.values():
+        spine.set_color('white')
+        spine.set_alpha(0.5)
+        
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', facecolor='black', bbox_inches='tight', dpi=100)
+    plt.close(fig)
+    buf.seek(0)
+    
+    img_b64 = base64.b64encode(buf.read()).decode('utf-8')
+    return {"image": img_b64}
