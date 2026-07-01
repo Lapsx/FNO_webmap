@@ -160,6 +160,38 @@ canvas.addEventListener('click', (e) => {
     requestPrediction();
 });
 
+// Botão direito para remover carga
+canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault(); // Impede o menu do navegador
+    if (charges.length === 0) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+
+    const grid_x = Math.floor((px / canvas.width) * N);
+    const grid_z = Math.floor((py / canvas.height) * N);
+
+    let closestIdx = -1;
+    let minDist = Infinity;
+
+    for (let i = 0; i < charges.length; i++) {
+        const c = charges[i];
+        const dist = Math.sqrt(Math.pow(c.x - grid_x, 2) + Math.pow(c.z - grid_z, 2));
+        if (dist < minDist) {
+            minDist = dist;
+            closestIdx = i;
+        }
+    }
+
+    // Tolerância de ~10 pixels/grid para o clique
+    if (closestIdx !== -1 && minDist < 10) {
+        charges.splice(closestIdx, 1);
+        drawCanvas();
+        requestPrediction();
+    }
+});
+
 // Salvar Estado e Comparar
 saveStateBtn.addEventListener('click', () => {
     if (currentPayload) {

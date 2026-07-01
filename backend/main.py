@@ -114,12 +114,17 @@ def compute_density(charges, b_val, kappa_val, u_val):
     inputs[0, :, :, 5] = u_plane
     
     if model is not None:
-        with torch.no_grad():
-            out = model(inputs)
-            density = out[0, :, :, 0].cpu().numpy()
+        if len(charges) == 0:
+            density = np.zeros((N, N))
+        else:
+            with torch.no_grad():
+                out = model(inputs)
+                density = out[0, :, :, 0].cpu().numpy()
     else:
         density = np.zeros((N, N))
     
+    # Impedir densidades negativas (artefato da camada linear da IA)
+    density = np.clip(density, 0, None)
     density[R < a] = np.nan
     return density
 
