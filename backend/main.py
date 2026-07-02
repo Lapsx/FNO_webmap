@@ -17,7 +17,7 @@ fno_core_path = os.path.join(current_dir, "model_core")
 sys.path.append(fno_core_path)
 
 try:
-    from fno_parametric_architecture import ParametricFNO2d
+    from fno_parametric_architecture_v2 import ParametricFNO2d
 except ImportError:
     print("Aviso: Não foi possível importar fno_parametric_architecture. Verifique se o caminho está correto.")
 
@@ -52,13 +52,13 @@ R = np.sqrt(X**2 + Z**2)
 # Carregando o Cérebro Neural Paramétrico
 model = None
 try:
-    model = ParametricFNO2d(modes1=16, modes2=16, width=64).to(device)
-    weights_path = os.path.join(current_dir, "model_core/fno_parametric_best_model.pth")
+    model = ParametricFNO2d(modes1=16, modes2=16, width=96).to(device)
+    weights_path = os.path.join(current_dir, "model_core/fno_parametric_best_model_v2.pth")
     
     if os.path.exists(weights_path):
         model.load_state_dict(torch.load(weights_path, map_location=device, weights_only=True))
         model.eval()
-        print("Modelo FNO Paramétrico carregado e pronto para latência zero!")
+        print("Modelo FNO Paramétrico V2 carregado com sucesso!")
     else:
         print("Aviso: Pesos do modelo paramétrico não encontrados.")
 except Exception as e:
@@ -89,6 +89,11 @@ class CompareRequest(BaseModel):
 def compute_density(charges, b_val, kappa_val, u_val):
     V = np.zeros((N, N))
     epsilon = 0.1
+    
+    # Calcular centro de massa das cargas no eixo Z
+    sum_q = 0.0
+    sum_qz = 0.0
+    
     for c in charges:
         pos_x = x[c.x]
         pos_z = z[N - 1 - c.z] # Inverte Z pois o canvas HTML cresce para baixo e o plano cartesiano para cima
